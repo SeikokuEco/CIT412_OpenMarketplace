@@ -106,7 +106,7 @@ function App() {
           <p>{item.location}</p>
 
           <button onClick={() => setSelected(item)}>View Details</button>
-          <button onClick={() => deleteListing(item.id)}>Delete</button>
+          <button onClick={() => deleteListing(item.listing_id)}>Delete</button>
         </div>
       ))}
     </div>
