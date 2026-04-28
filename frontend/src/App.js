@@ -96,7 +96,11 @@ function App() {
     <div className="listings">
       {listings.map(item => (
         <div className="card" key={item.listing_id}>
-          <div className="card-img"></div>
+          {item.image_url ? (
+            <img src={item.image_url} alt={item.title} style={{ width: "100%", height: "160px", objectFit: "cover" }} />
+          ) : (
+            <div className="card-img">Image Unavailable</div>
+          )}
 
           <h4>{item.title}</h4>
           <div className="price">${item.price}</div>
