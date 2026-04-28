@@ -67,15 +67,15 @@ app.post("/api/listing", async (req, res) => {
     listing_id: Date.now().toString(),
     user_id: user_id || "anonymous",
     title,
-    price: parseFloat(price),
     description: description || "",
+    price: parseFloat(price),
+    category: category || "",
+    condition: condition || "",
+    status: "active",
     location: location || "",
     latitude: latitude || null,
     longitude: longitude || null,
-    category: category || "",
-    condition: condition || "",
     image_url: image_url || "",
-    status: "active",
     created_at: new Date().toISOString()
   };
 
