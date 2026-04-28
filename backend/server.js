@@ -1,97 +1,150 @@
 const express = require("express");
 const cors = require("cors");
+const { BigQuery } = require("@google-cloud/bigquery");
+const uploadRoute = require("./routes/upload"); // import upload route
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 const PORT = 3000;
+const bigquery = new BigQuery({
+  projectId: "cit412-final-project-494116"
+});
+const DATASET = "marketplace";
+const TABLE = "listings";
 
-/* Placeholder database  */
-let listings = [];
+/* Upload route for listing images -- images to be stored in firestore*/
+app.use("/api/upload", uploadRoute);
 
 /* GET all listings */
-app.get("/api/listing", (req, res) => {
+app.get("/api/listing", async (req, res) => {
   try {
-    res.json(listings);
+    const query = `SELECT * FROM \`${DATASET}.${TABLE}\` ORDER BY created_at DESC`;
+    const [rows] = await bigquery.query(query);
+    res.json(rows);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch listings" });
   }
 });
 
 /* GET listing by ID */
-app.get("/api/listing/:id", (req, res) => {
+app.get("/api/listing/:id", async (req, res) => {
   try {
-    const listing = listings.find(l => l.id === req.params.id);
+    const query = `
+      SELECT * FROM \`${DATASET}.${TABLE}\`
+      WHERE listing_id = @id
+      LIMIT 1
+    `;
+    const options = {
+      query,
+      params: { id: req.params.id }
+    };
+    const [rows] = await bigquery.query(options);
 
-    if (!listing) {
+    if (rows.length === 0) {
       return res.status(404).json({ error: "Listing not found" });
     }
 
-    res.json(listing);
+    res.json(rows[0]);
   } catch (error) {
     res.status(500).json({ error: "Error retrieving listing" });
   }
 });
 
 /* Create new listing */
-app.post("/api/listing", (req, res) => {
-  const { title, price, description, location, latitude, longitude } = req.body;
+app.post("/api/listing", async (req, res) => {
+  const { title, price, description, location, latitude, longitude, user_id, category, condition, image_url } = req.body;
 
   if (!title || !price) {
     return res.status(400).json({ error: "Title and price are required" });
   }
 
   const newListing = {
-    id: Date.now().toString(),
+    listing_id: Date.now().toString(),
+    user_id: user_id || "anonymous",
     title,
-    price,
+    price: parseFloat(price),
     description: description || "",
     location: location || "",
     latitude: latitude || null,
     longitude: longitude || null,
-    createdAt: new Date()
+    category: category || "",
+    condition: condition || "",
+    image_url: image_url || "",
+    status: "active",
+    created_at: new Date().toISOString()
   };
 
-  listings.push(newListing);
+  try {
+    await bigquery
+      .dataset(DATASET)
+      .table(TABLE)
+      .insert([newListing]);
 
-  res.json({
-    message: "Listing created",
-    id: newListing.id
-  });
+    res.status(201).json({
+      message: "Listing created",
+      id: newListing.listing_id
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create listing" });
+  }
 });
 
 /* Update listing */
-app.put("/api/listing/:id", (req, res) => {
-  const index = listings.findIndex(l => l.id === req.params.id);
+app.put("/api/listing/:id", async (req, res) => {
+  const { title, price, description, location, status } = req.body;
 
-  if (index === -1) {
-    return res.status(404).json({ error: "Listing not found" });
+  try {
+    const query = `
+      UPDATE \`${DATASET}.${TABLE}\`
+      SET
+        title = COALESCE(@title, title),
+        price = COALESCE(@price, price),
+        description = COALESCE(@description, description),
+        location = COALESCE(@location, location),
+        status = COALESCE(@status, status)
+      WHERE listing_id = @id
+    `;
+    const options = {
+      query,
+      params: {
+        id: req.params.id,
+        title: title || null,
+        price: price ? parseFloat(price) : null,
+        description: description || null,
+        location: location || null,
+        status: status || null
+      }
+    };
+
+    await bigquery.query(options);
+    res.json({ message: "Listing updated" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update listing" });
   }
-
-  listings[index] = {
-    ...listings[index],
-    ...req.body,
-    updatedAt: new Date()
-  };
-
-  res.json({ message: "Listing updated" });
 });
 
 /* Delete listing */
-app.delete("/api/listing/:id", (req, res) => {
-  const index = listings.findIndex(l => l.id === req.params.id);
+app.delete("/api/listing/:id", async (req, res) => {
+  try {
+    const query = `
+      DELETE FROM \`${DATASET}.${TABLE}\`
+      WHERE listing_id = @id
+    `;
+    const options = {
+      query,
+      params: { id: req.params.id }
+    };
 
-  if (index === -1) {
-    return res.status(404).json({ error: "Listing not found" });
+    await bigquery.query(options);
+    res.json({ message: "Listing deleted" });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete listing" });
   }
-
-  listings.splice(index, 1);
-
-  res.json({ message: "Listing deleted" });
 });
 
-/* Health check route */
+/* Health check */
 app.get("/", (req, res) => {
   res.json({ message: "Marketplace API is running" });
 });
