@@ -26,7 +26,6 @@ function App() {
   const loadListings = async () => {
     const res = await fetch(BASE_URL);
     const data = await res.json();
-    console.log(data);
     setListings(Array.isArray(data) ? data : []);
   };
 
