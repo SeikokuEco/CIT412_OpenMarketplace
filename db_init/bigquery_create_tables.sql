@@ -7,6 +7,7 @@ CREATE TABLE `cit412-final-project-494116.marketplace.listings` (
   category      STRING,
   condition     STRING,
   status        STRING,
+  location      STRING,
   latitude      FLOAT64,
   longitude     FLOAT64,
   image_url     STRING,

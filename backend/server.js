@@ -6,6 +6,9 @@ const uploadRoute = require("./routes/upload"); // import upload route
 const app = express();
 app.use(cors());
 app.use(express.json());
+// added to handle JSON.stringify
+app.use(express.urlencoded({ extended: true }));
+
 
 const PORT = 3000;
 const bigquery = new BigQuery({
@@ -14,7 +17,7 @@ const bigquery = new BigQuery({
 const DATASET = "marketplace";
 const TABLE = "listings";
 
-/* Upload route for listing images -- images to be stored in firestore*/
+/* Upload route for listing images -- images to be stored in firestore */
 app.use("/api/upload", uploadRoute);
 
 /* GET all listings */
@@ -87,6 +90,7 @@ app.post("/api/listing", async (req, res) => {
       id: newListing.listing_id
     });
   } catch (error) {
+    console.error("BigQuery insert error:", JSON.stringify(error, null, 2));
     res.status(500).json({ error: "Failed to create listing" });
   }
 });
