@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./styles.css";
 
-const BASE_URL = "http://localhost:3000/api/listing";
+const BASE_URL = "/api/listing";
 
 function App() {
   const [listings, setListings] = useState([]);
@@ -26,7 +26,8 @@ function App() {
   const loadListings = async () => {
     const res = await fetch(BASE_URL);
     const data = await res.json();
-    setListings(data);
+    console.log(data);
+    setListings(Array.isArray(data) ? data : []);
   };
 
   useEffect(() => {
@@ -94,7 +95,7 @@ function App() {
 
     <div className="listings">
       {listings.map(item => (
-        <div className="card" key={item.id}>
+        <div className="card" key={item.listing_id}>
           <div className="card-img"></div>
 
           <h4>{item.title}</h4>
