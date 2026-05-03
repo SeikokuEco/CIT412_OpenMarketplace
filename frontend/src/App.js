@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { LoadScript } from "@react-google-maps/api";
+import ListingDetail from "./components/ListingDetail";
 import "./styles.css";
 
 const BASE_URL = "/api/listing";
@@ -14,7 +16,8 @@ function App() {
     location: ""
   });
 
-  // HANDLE INPUT
+  const [image, setImage] = useState(null);
+
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -22,7 +25,6 @@ function App() {
     });
   };
 
-  // LOAD DATA
   const loadListings = async () => {
     const res = await fetch(BASE_URL);
     const data = await res.json();
@@ -33,32 +35,39 @@ function App() {
     loadListings();
   }, []);
 
-  // ADD LISTING
   const addListing = async () => {
     if (!form.title || !form.price) {
       alert("Title and price required");
       return;
     }
 
+    let image_url = "";
+
+    if (image) {
+      const fd = new FormData();
+      fd.append("image", image);
+
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: fd
+      });
+
+      const uploadData = await uploadRes.json();
+      image_url = uploadData.image_url;
+    }
+
     await fetch(BASE_URL, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(form)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...form, image_url })
     });
 
-    setForm({
-      title: "",
-      price: "",
-      description: "",
-      location: ""
-    });
+    setForm({ title: "", price: "", description: "", location: "" });
+    setImage(null);
 
     loadListings();
   };
 
-  // DELETE
   const deleteListing = async (id) => {
     await fetch(`${BASE_URL}/${id}`, {
       method: "DELETE"
@@ -68,66 +77,55 @@ function App() {
   };
 
   return (
-  <div>
+    <LoadScript googleMapsApiKey="AIzaSyB7gS_Pf-TUuUZ9TCGwwLcrY3xGymom_-Q">
+      <div>
+        <div className="navbar">Open Marketplace</div>
 
-    <div className="navbar">Open Marketplace</div>
+        <div className="main">
+          <div className="form">
+            <h3>Create Listing</h3>
 
-   <div className="main">
+            <input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
+            <input name="price" placeholder="Price" value={form.price} onChange={handleChange} />
+            <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} />
+            <input name="location" placeholder="Location" value={form.location} onChange={handleChange} />
+            <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} style={{ marginTop: "10px" }}/>
 
-  {/* CENTER FORM */}
-  <div className="form">
-    <h3>Create Listing</h3>
+            <button className="btn" onClick={addListing}>
+              Post Listing
+            </button>
+          </div>
 
-    <input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
-    <input name="price" placeholder="Price" value={form.price} onChange={handleChange} />
-    <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} />
-    <input name="location" placeholder="Location" value={form.location} onChange={handleChange} />
+          <div className="right">
+            <div className="section-title">Available Listings</div>
 
-    <button className="btn" onClick={addListing}>
-      Post Listing
-    </button>
-  </div>
+            <div className="listings">
+              {listings.map(item => (
+                <div className="card" key={item.listing_id}>
+                  {item.image_url ? (
+                    <img src={item.image_url} alt={item.title} style={{ width: "100%", height: "160px", objectFit: "cover" }} />
+                  ) : (
+                    <div className="card-img">Image Unavailable</div>
+                  )}
 
-  {/* LISTINGS BELOW */}
-  <div className="right">
-    <div className="section-title">Available Listings</div>
+                  <h4>{item.title}</h4>
+                  <div className="price">${item.price}</div>
+                  <p>{item.location}</p>
 
-    <div className="listings">
-      {listings.map(item => (
-        <div className="card" key={item.listing_id}>
-          {item.image_url ? (
-            <img src={item.image_url} alt={item.title} style={{ width: "100%", height: "160px", objectFit: "cover" }} />
-          ) : (
-            <div className="card-img">Image Unavailable</div>
-          )}
-
-          <h4>{item.title}</h4>
-          <div className="price">${item.price}</div>
-          <p>{item.location}</p>
-
-          <button onClick={() => setSelected(item)}>View Details</button>
-          <button onClick={() => deleteListing(item.listing_id)}>Delete</button>
+                  <button onClick={() => setSelected(item)}>View Details</button>
+                  <button onClick={() => deleteListing(item.listing_id)}>Delete</button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      ))}
-    </div>
-  </div>
 
-</div>
-
-    {/* DETAILS */}
-    {selected && (
-      <div className="detail">
-        <h2>{selected.title}</h2>
-        <p className="price">${selected.price}</p>
-        <p>{selected.description}</p>
-        <p>{selected.location}</p>
-
-        <button onClick={() => setSelected(null)}>Close</button>
+        {selected && (
+          <ListingDetail listing={selected} onClose={() => setSelected(null)} />
+        )}
       </div>
-    )}
-
-  </div>
-);
+    </LoadScript>
+  );
 }
 
 export default App;
