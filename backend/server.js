@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const { BigQuery } = require("@google-cloud/bigquery");
 const uploadRoute = require("./routes/upload"); // import upload route
+const savedRoute = require("./routes/saved"); // import saved listings route
 
 const app = express();
 app.use(cors());
@@ -17,8 +18,11 @@ const bigquery = new BigQuery({
 const DATASET = "marketplace";
 const TABLE = "listings";
 
-/* Upload route for listing images -- images to be stored in firestore */
+/* Upload route for listing images -- images to be stored in bucket */
 app.use("/api/upload", uploadRoute);
+/* Saved listings route -- stored in firestore */
+app.use("/api/saved", savedRoute);
+
 
 /* GET all listings */
 app.get("/api/listing", async (req, res) => {
