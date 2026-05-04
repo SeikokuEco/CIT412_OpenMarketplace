@@ -13,7 +13,7 @@ gcloud config set project cit412-final-project-494116
 ```bash
 cd backend
 npm install
-cp .env.example .env    # if using google maps
+cp .env.example .env    # edit env values with same maps api key
 npm run dev             # or npm start
 ```
 
@@ -21,5 +21,6 @@ npm run dev             # or npm start
 ```bash
 cd frontend
 npm install
+cp .env.example .env    # edit env values with same maps api key
 npm start
 ```
