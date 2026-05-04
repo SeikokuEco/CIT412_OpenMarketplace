@@ -1,12 +1,10 @@
-import { GoogleMap, Marker } from "@react-google-maps/api";
-
-const containerStyle = {
-  width: "100%",
-  height: "300px",
-};
+import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
 
 export default function ListingDetail({ listing, onClose }) {
   if (!listing) return null;
+
+  // ok im not leaking the API AGAIN WHOOPS
+  console.log("Frontend key:", process.env.REACT_APP_GOOGLE_MAPS_API_KEY);
 
   const center = {
     lat: listing.latitude || 39.7684,
@@ -20,11 +18,23 @@ export default function ListingDetail({ listing, onClose }) {
       <p>{listing.description}</p>
       <p>{listing.location}</p>
 
-      <img src={listing.image_url} alt="Listing" className="img-fluid mb-3" />
+      {listing.image_url && (
+        <img
+          src={listing.image_url}
+          alt="Listing"
+          className="img-fluid mb-3"
+        />
+      )}
 
-      <GoogleMap mapContainerStyle={containerStyle} center={center} zoom={12}>
-        <Marker position={center} />
-      </GoogleMap>
+      <APIProvider apiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY}>
+        <Map
+          style={{ width: "100%", height: "300px" }}
+          center={center}
+          zoom={20}
+        >
+          <Marker position={center} />
+        </Map>
+      </APIProvider>
 
       <button className="btn btn-secondary mt-3" onClick={onClose}>
         Close

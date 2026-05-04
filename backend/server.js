@@ -1,5 +1,3 @@
-process.env.GOOGLE_APPLICATION_CREDENTIALS =
-  "./bigquery-key.json";
 
 const uploadRoute = require("./routes/upload");
 const express = require("express");
@@ -235,6 +233,10 @@ app.delete("/api/listing/:id", async (req, res) => {
     });
   }
 });
+
+
+
+
 
 /* Health check */
 app.get("/", (req, res) => {
