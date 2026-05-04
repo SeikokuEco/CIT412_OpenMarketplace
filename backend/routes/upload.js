@@ -7,6 +7,7 @@ const storage = new Storage();
 const bucket = storage.bucket("marketplace-images-bucket");
 const upload = multer({ storage: multer.memoryStorage() });
 
+/* POST /api/upload */
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     if (!req.file) {

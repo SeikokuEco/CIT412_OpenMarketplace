@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { LoadScript } from "@react-google-maps/api";
 import ListingDetail from "./components/ListingDetail";
 import "./styles.css";
 
@@ -77,7 +76,6 @@ function App() {
   };
 
   return (
-    <LoadScript googleMapsApiKey="AIzaSyB7gS_Pf-TUuUZ9TCGwwLcrY3xGymom_-Q">
       <div>
         <div className="navbar">Open Marketplace</div>
 
@@ -124,7 +122,6 @@ function App() {
           <ListingDetail listing={selected} onClose={() => setSelected(null)} />
         )}
       </div>
-    </LoadScript>
   );
 }
 
