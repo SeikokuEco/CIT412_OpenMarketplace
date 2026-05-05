@@ -24,7 +24,7 @@ const bigquery = new BigQuery({
 const DATASET = "marketplace";
 const TABLE = "listings";
 
-/* Upload route for listing images -- images to be stored in firestore */
+/* Upload route for listing images -- images to be stored in cloud bucket */
 app.use("/api/upload", uploadRoute);
 /* Saved listings route -- stored in firestore */
 app.use("/api/saved", savedRoute);
