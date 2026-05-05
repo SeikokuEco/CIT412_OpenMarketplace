@@ -4,6 +4,9 @@ const express = require("express");
 const cors = require("cors");
 const { BigQuery } = require("@google-cloud/bigquery");
 const { Storage } = require("@google-cloud/storage");
+const uploadRoute = require("./routes/upload"); // import upload route
+const savedRoute = require("./routes/saved"); // import saved listings route
+
 const app = express();
 const axios = require("axios");
 require("dotenv").config();
@@ -24,7 +27,12 @@ const bigquery = new BigQuery({
 const DATASET = "marketplace";
 const TABLE = "listings";
 
+/* Upload route for listing images -- images to be stored in firestore */
+app.use("/api/upload", uploadRoute);
+/* Saved listings route -- stored in firestore */
+app.use("/api/saved", savedRoute);
 
+/* Get Coordinates function*/
 async function getCoordinates(address) {
   try {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -48,12 +56,6 @@ async function getCoordinates(address) {
     return { lat: null, lng: null };
   }
 }
-
-
-
-
-/* Upload route for listing images -- images to be stored in firestore */
-app.use("/api/upload", uploadRoute);
 
 /* GET all listings */
 app.get("/api/listing", async (req, res) => {
