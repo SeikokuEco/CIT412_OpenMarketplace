@@ -1,4 +1,3 @@
-
 const uploadRoute = require("./routes/upload");
 const express = require("express");
 const cors = require("cors");
@@ -10,7 +9,6 @@ const savedRoute = require("./routes/saved"); // import saved listings route
 const app = express();
 const axios = require("axios");
 require("dotenv").config();
-
 
 
 app.use(cors());
@@ -32,7 +30,7 @@ app.use("/api/upload", uploadRoute);
 /* Saved listings route -- stored in firestore */
 app.use("/api/saved", savedRoute);
 
-/* Get Coordinates function*/
+/* Get Coordinates function */
 async function getCoordinates(address) {
   try {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
@@ -235,10 +233,6 @@ app.delete("/api/listing/:id", async (req, res) => {
     });
   }
 });
-
-
-
-
 
 /* Health check */
 app.get("/", (req, res) => {
