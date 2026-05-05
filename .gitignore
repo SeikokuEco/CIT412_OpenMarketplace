@@ -1,5 +1,12 @@
 # Dependencies
-node_modules/
+node_modules
+
 # Environment variables
 .env
 
+backend/bigquery-key.json
+backend/*.json
+
+*.json
+!package.json
+!package-lock.json
