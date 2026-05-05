@@ -1,4 +1,3 @@
-const uploadRoute = require("./routes/upload");
 const express = require("express");
 const cors = require("cors");
 const { BigQuery } = require("@google-cloud/bigquery");
