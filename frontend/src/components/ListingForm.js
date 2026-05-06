@@ -12,15 +12,38 @@ export default function ListingForm({ onAdd }) {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const submit = () => {
-    if (!form.title || !form.price) {
-      alert("Title and price required");
-      return;
-    }
+const submit = async () => {
+  if (!form.title || !form.price) {
+    alert("Title and price required");
+    return;
+  }
 
-    onAdd(form);
-    setForm({ title: "", price: "", description: "", location: "" });
-  };
+  let image_url = "";
+
+  // Upload image if selected
+  if (image) {
+    const fd = new FormData();
+    fd.append("image", image);
+
+    const uploadRes = await fetch("http://localhost:3000/api/upload", {
+      method: "POST",
+      body: fd
+    });
+
+    const uploadData = await uploadRes.json();
+    image_url = uploadData.image_url;
+  }
+
+  // Send listing with image_url
+  onAdd({ ...form, image_url });
+
+  // Reset form
+  setForm({ title: "", price: "", description: "", location: "", category:"", condition:"" });
+  setImage(null);
+};
+
+
+  const [image, setImage] = useState(null);
 
   return (
     <div className="card p-3">
@@ -28,10 +51,15 @@ export default function ListingForm({ onAdd }) {
 
       <input className="form-control mb-2" name="title" placeholder="Title" value={form.title} onChange={handleChange} />
       <input className="form-control mb-2" name="price" placeholder="Price" value={form.price} onChange={handleChange} />
-      <textarea className="form-control mb-2" name="description" placeholder="Description" value={form.description} onChange={handleChange} />
+      <input className="form-control mb-2" name="description" placeholder="Description" value={form.description} onChange={handleChange}/>
       <input className="form-control mb-2" name="location" placeholder="Location" value={form.location} onChange={handleChange} />
+      <input type="file" className="form-control mb-2" accept="image/*" onChange={(e) => setImage(e.target.files[0])}/>
+      <input className="form-control mb-2" name="category" placeholder="Category" value={form.category} onChange={handleChange}/>
+      <input className="form-control mb-2" name="condition" placeholder="Condition" value={form.condition} onChange={handleChange}/>
 
       <button className="btn btn-primary" onClick={submit}>Post Listing</button>
     </div>
   );
 }
+
+

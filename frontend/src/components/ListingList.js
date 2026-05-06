@@ -13,6 +13,10 @@ export default function ListingList({ listings, onDelete, onSelect }) {
               View Details
             </button>
 
+            <button className="btn btn-success mb-2"onClick={() => onSave(item)}>
+              Save
+            </button>
+            
             <button className="btn btn-danger" onClick={() => onDelete(item.id)}>
               Delete
             </button>
