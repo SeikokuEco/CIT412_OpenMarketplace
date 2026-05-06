@@ -2,17 +2,20 @@ const express = require("express");
 const cors = require("cors");
 const { BigQuery } = require("@google-cloud/bigquery");
 const { Storage } = require("@google-cloud/storage");
-const uploadRoute = require("./routes/upload"); // import upload route
-const savedRoute = require("./routes/saved"); // import saved listings route
+const uploadRoute = require("./routes/upload");
+const savedRoute = require("./routes/saved");
+const { Firestore } = require("@google-cloud/firestore");
+const firestore = new Firestore({
+  databaseId: "cit412-final-project-firestore-db"
+});
+
 
 const app = express();
 const axios = require("axios");
 require("dotenv").config();
 
-
 app.use(cors());
 app.use(express.json());
-// added to handle JSON.stringify
 app.use(express.urlencoded({ extended: true }));
 
 const PORT = 3000;
@@ -24,9 +27,10 @@ const bigquery = new BigQuery({
 const DATASET = "marketplace";
 const TABLE = "listings";
 
-/* Upload route for listing images -- images to be stored in cloud bucket */
+/* Upload route for listing images */
 app.use("/api/upload", uploadRoute);
-/* Saved listings route -- stored in firestore */
+
+/* Saved listings route */
 app.use("/api/saved", savedRoute);
 
 /* Get Coordinates function */
@@ -36,16 +40,12 @@ async function getCoordinates(address) {
 
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(address)}&key=${apiKey}`;
 
-    console.log("Using API key:", apiKey);
-    console.log("Geocode URL:", url);
-
     const res = await axios.get(url);
 
     if (res.data.status === "OK") {
       const loc = res.data.results[0].geometry.location;
       return { lat: loc.lat, lng: loc.lng };
     } else {
-      console.warn("Geocode failed:", res.data.status);
       return { lat: null, lng: null };
     }
   } catch (err) {
@@ -62,11 +62,7 @@ app.get("/api/listing", async (req, res) => {
     res.json(rows);
   } catch (error) {
     console.error("🔥 BIGQUERY ERROR:", error);
-
-    res.status(500).json({
-      error: error.message,
-      details: error
-    });
+    res.status(500).json({ error: error.message, details: error });
   }
 });
 
@@ -94,11 +90,7 @@ app.get("/api/listing/:id", async (req, res) => {
 
   } catch (error) {
     console.error("🔥 BIGQUERY ERROR:", error);
-
-    res.status(500).json({
-      error: error.message,
-      details: error
-    });
+    res.status(500).json({ error: error.message, details: error });
   }
 });
 
@@ -119,7 +111,6 @@ app.post("/api/listing", async (req, res) => {
     return res.status(400).json({ error: "Title and price are required" });
   }
 
-  //  GET COORDINATES FROM ADDRESS
   let coords = { lat: null, lng: null };
   if (location) {
     coords = await getCoordinates(location);
@@ -135,8 +126,8 @@ app.post("/api/listing", async (req, res) => {
     condition: condition || "",
     status: "active",
     location: location || "",
-    latitude: coords.lat,      // 🔥 FIXED
-    longitude: coords.lng,     // 🔥 FIXED
+    latitude: coords.lat,
+    longitude: coords.lng,
     image_url: image_url || "",
     created_at: new Date().toISOString()
   };
@@ -144,39 +135,51 @@ app.post("/api/listing", async (req, res) => {
   try {
     console.log("📦 INSERTING:", newListing);
 
-    await bigquery
-      .dataset(DATASET)
-      .table(TABLE)
-      .insert([newListing]);
+    //  Save to BigQuery
+    await bigquery.dataset(DATASET).table(TABLE).insert([newListing]);
 
+    //  ALSO save to Firestore
+    await firestore
+      .collection("listings")
+      .doc(newListing.listing_id)
+      .set(newListing);
+
+  console.log("🔥 Saved to Firestore:", newListing.listing_id);
     res.status(201).json({
       message: "Listing created",
       id: newListing.listing_id
     });
 
   } catch (error) {
-    console.error("🔥 BIGQUERY INSERT ERROR:", error);
-
-    res.status(500).json({
-      error: error.message,
-      details: error
-    });
+    console.error("🔥 ERROR:", error);
+    res.status(500).json({ error: error.message, details: error });
   }
 });
 
 /* Update listing */
 app.put("/api/listing/:id", async (req, res) => {
-  const { title, price, description, location, status } = req.body;
+  const { title, price, description, location, category, condition, image_url } = req.body;
 
   try {
+    // Recalculate coordinates if location is provided
+    let coords = { lat: null, lng: null };
+    if (location) {
+      coords = await getCoordinates(location);
+    }
+
+    // Update BigQuery
     const query = `
       UPDATE \`${DATASET}.${TABLE}\`
       SET
-        title = COALESCE(@title, title),
-        price = COALESCE(@price, price),
-        description = COALESCE(@description, description),
-        location = COALESCE(@location, location),
-        status = COALESCE(@status, status)
+        title = @title,
+        price = @price,
+        description = @description,
+        location = @location,
+        category = @category,
+        condition = @condition,
+        image_url = @image_url,
+        latitude = @latitude,
+        longitude = @longitude
       WHERE listing_id = @id
     `;
 
@@ -184,27 +187,43 @@ app.put("/api/listing/:id", async (req, res) => {
       query,
       params: {
         id: req.params.id,
-        title: title || null,
-        price: price ? Number(price) : null,
-        description: description || null,
-        location: location || null,
-        status: status || null
+        title: title ?? "",
+        price: price !== undefined ? Number(price) : null,
+        description: description ?? "",
+        location: location ?? "",
+        category: category ?? "",
+        condition: condition ?? "",
+        image_url: image_url ?? "",
+        latitude: coords.lat,
+        longitude: coords.lng
       }
     };
 
     await bigquery.query(options);
 
+    // Update Firestore
+    await firestore.collection("listings").doc(req.params.id).update({
+      title,
+      price: Number(price),
+      description,
+      location,
+      category,
+      condition,
+      image_url,
+      latitude: coords.lat,
+      longitude: coords.lng
+    });
+
     res.json({ message: "Listing updated" });
 
   } catch (error) {
     console.error("🔥 BIGQUERY ERROR:", error);
-
-    res.status(500).json({
-      error: error.message,
-      details: error
-    });
+    res.status(500).json({ error: error.message, details: error });
   }
 });
+
+
+
 
 /* Delete listing */
 app.delete("/api/listing/:id", async (req, res) => {
@@ -219,19 +238,20 @@ app.delete("/api/listing/:id", async (req, res) => {
       params: { id: req.params.id }
     };
 
+    // 1. Delete from BigQuery
     await bigquery.query(options);
+
+    // 2. Delete from Firestore
+    await firestore.collection("listings").doc(req.params.id).delete();
 
     res.json({ message: "Listing deleted" });
 
   } catch (error) {
-    console.error("🔥 BIGQUERY ERROR:", error);
-
-    res.status(500).json({
-      error: error.message,
-      details: error
-    });
+    console.error("🔥 DELETE ERROR:", error);
+    res.status(500).json({ error: error.message, details: error });
   }
 });
+
 
 /* Health check */
 app.get("/", (req, res) => {

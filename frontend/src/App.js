@@ -1,28 +1,17 @@
 import { useEffect, useState } from "react";
 import ListingDetail from "./components/ListingDetail";
+import HomePage from "./pages/HomePage";
+import CreateListingPage from "./pages/CreateListingPage";
 import "./styles.css";
 
 const BASE_URL = "/api/listing";
 
 function App() {
+  const [page, setPage] = useState("home");
+
   const [listings, setListings] = useState([]);
   const [selected, setSelected] = useState(null);
-
-  const [form, setForm] = useState({
-    title: "",
-    price: "",
-    description: "",
-    location: ""
-  });
-
-  const [image, setImage] = useState(null);
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
-  };
+  const [editing, setEditing] = useState(null);
 
   const loadListings = async () => {
     const res = await fetch(BASE_URL);
@@ -34,17 +23,17 @@ function App() {
     loadListings();
   }, []);
 
-  const addListing = async () => {
-    if (!form.title || !form.price) {
+  const addListing = async (formData, imageFile) => {
+    if (!formData.title || !formData.price) {
       alert("Title and price required");
       return;
     }
 
     let image_url = "";
 
-    if (image) {
+    if (imageFile) {
       const fd = new FormData();
-      fd.append("image", image);
+      fd.append("image", imageFile);
 
       const uploadRes = await fetch("/api/upload", {
         method: "POST",
@@ -58,11 +47,8 @@ function App() {
     await fetch(BASE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...form, image_url })
+      body: JSON.stringify({ ...formData, image_url })
     });
-
-    setForm({ title: "", price: "", description: "", location: "" });
-    setImage(null);
 
     loadListings();
   };
@@ -75,53 +61,112 @@ function App() {
     loadListings();
   };
 
+  const saveListing = async (listing) => {
+    const userId = "demoUser";
+
+    await fetch(`/api/saved/${userId}/${listing.listing_id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: listing.title,
+        price: listing.price,
+        image_url: listing.image_url
+      })
+    });
+
+    alert("Saved!");
+  };
+
+  //  Start editing
+  const startEditing = (listing) => {
+    setEditing(listing);
+    setPage("create");
+  };
+
+  //  Update listing
+  const updateListing = async (id, formData, imageFile) => {
+    let image_url = formData.image_url;
+
+    if (imageFile) {
+      const fd = new FormData();
+      fd.append("image", imageFile);
+
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: fd
+      });
+
+      const uploadData = await uploadRes.json();
+      image_url = uploadData.image_url;
+    }
+
+    await fetch(`${BASE_URL}/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...formData, image_url })
+    });
+
+    loadListings();
+    setEditing(null);
+  };
+
   return (
-      <div>
-        <div className="navbar">Open Marketplace</div>
+    <div>
+      {/*  Navigation Bar */}
+      <div className="navbar">
+        <div className="nav-left">Marketplace</div>
 
-        <div className="main">
-          <div className="form">
-            <h3>Create Listing</h3>
+        <div className="nav-right">
+          <button
+            className={page === "home" ? "nav-btn active" : "nav-btn"}
+            onClick={() => {
+              setEditing(null);
+              setPage("home");
+            }}
+          >
+            Home
+          </button>
 
-            <input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
-            <input name="price" placeholder="Price" value={form.price} onChange={handleChange} />
-            <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} />
-            <input name="location" placeholder="Location" value={form.location} onChange={handleChange} />
-            <input type="file" accept="image/*" onChange={(e) => setImage(e.target.files[0])} style={{ marginTop: "10px" }}/>
-
-            <button className="btn" onClick={addListing}>
-              Post Listing
-            </button>
-          </div>
-
-          <div className="right">
-            <div className="section-title">Available Listings</div>
-
-            <div className="listings">
-              {listings.map(item => (
-                <div className="card" key={item.listing_id}>
-                  {item.image_url ? (
-                    <img src={item.image_url} alt={item.title} style={{ width: "100%", height: "160px", objectFit: "cover" }} />
-                  ) : (
-                    <div className="card-img">Image Unavailable</div>
-                  )}
-
-                  <h4>{item.title}</h4>
-                  <div className="price">${item.price}</div>
-                  <p>{item.location}</p>
-
-                  <button onClick={() => setSelected(item)}>View Details</button>
-                  <button onClick={() => deleteListing(item.listing_id)}>Delete</button>
-                </div>
-              ))}
-            </div>
-          </div>
+          <button
+            className={page === "create" ? "nav-btn active" : "nav-btn"}
+            onClick={() => {
+              setEditing(null);
+              setPage("create");
+            }}
+          >
+            Create Listing
+          </button>
         </div>
-
-        {selected && (
-          <ListingDetail listing={selected} onClose={() => setSelected(null)} />
-        )}
       </div>
+
+      {/* Page Switching */}
+      {page === "home" && (
+        <HomePage
+          listings={listings}
+          onSelect={setSelected}
+          onDelete={deleteListing}
+          onSave={saveListing}
+          onEdit={startEditing}   
+        />
+      )}
+
+      {page === "create" && (
+        <CreateListingPage
+          listings={listings}
+          onAdd={addListing}
+          onDelete={deleteListing}
+          onSelect={setSelected}
+          onEdit={startEditing}     
+          onUpdate={updateListing}  
+          editing={editing}        
+        />
+      )}
+
+      {/* ⭐ Listing Detail Modal */}
+      {selected && (
+        <ListingDetail listing={selected} onClose={() => setSelected(null)} />
+      )}
+    </div>
   );
 }
 
