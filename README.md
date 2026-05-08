@@ -33,4 +33,3 @@ npm start
     - Google Cloud Project Name
 - Add saved listings to be stored in firestore
 - Add chatting between buyer and seller
-- Adjust listing details to be on the right side of the screen instead of the bottom
