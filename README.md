@@ -25,3 +25,12 @@ npm install
 cp .env.example .env    # edit env values with same maps api key
 npm start
 ```
+
+# Future Improvements
+- Modularize the project by storing things as environment variables
+    - Firestore Database Name
+    - BigQuery Database Name
+    - Google Cloud Project Name
+- Add saved listings to be stored in firestore
+- Add chatting between buyer and seller
+- Adjust listing details to be on the right side of the screen instead of the bottom

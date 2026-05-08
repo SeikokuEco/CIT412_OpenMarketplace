@@ -63,7 +63,7 @@ export default function HomePage({ listings, onSelect, onDelete, onSave }) {
             <p>{item.location}</p>
 
             {/* This opens the detail view with the map */}
-            <button onClick={() => onSelect(item)}>View Details</button>
+            <button id="detailsButtonhHome" onClick={() => onSelect(item)}>View Details</button>
           </div>
         ))}
       </div>

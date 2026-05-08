@@ -149,6 +149,11 @@ body {
   color: white;
 }
 
+#detailsButtonhHome {
+  background: #d1e2ff;
+  color: black;
+}
+
 /* DETAILS */
 .detail {
   margin: 30px;
