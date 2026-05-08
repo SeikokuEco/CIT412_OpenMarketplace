@@ -46,6 +46,10 @@ body {
   transform: translateY(-2px);
 }
 
+#detailsButtonhHome {
+  background: #d1e2ff;
+  color: black;
+}
 .nav-btn.active {
   background: white;
   color: #1877f2;
@@ -94,10 +98,10 @@ body {
   text-align: center;
 }
 
-/* RIGHT SECTION */
+/* LISTINGS GRID */
 .right {
-  width: 100%;
   max-width: 1200px;
+  width: auto;
 }
 
 .section-title {
@@ -107,14 +111,13 @@ body {
   color: #333;
 }
 
-/* GRID */
 .listings {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 20px;
 }
 
-/* CARD */
+/* LISTING CARD */
 .card {
   background: white;
   padding: 18px;
@@ -161,18 +164,58 @@ body {
   color: white;
 }
 
-#detailsButtonhHome {
-  background: #d1e2ff;
-  color: black;
+/* FORM */
+.form {
+  width: 100%;
+  max-width: 500px;
+  background: white;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  margin-bottom: 40px;
 }
 
-/* DETAILS */
-.detail {
-  margin: 30px;
-  background: white;
-  padding: 20px;
-  border-radius: 14px;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+.form h3 {
+  text-align: center;
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #1877f2;
+}
+
+.form input,
+.form textarea {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 14px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 15px;
+  transition: 0.2s;
+}
+
+.form input:focus,
+.form textarea:focus {
+  border-color: #1877f2;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(24,119,242,0.15);
+}
+
+.btn {
+  width: 100%;
+  padding: 14px;
+  font-size: 16px;
+  border-radius: 10px;
+  border: none;
+  background: linear-gradient(90deg, #1877f2, #3a8dff);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(24,119,242,0.3);
 }
 
 /* DROPDOWN */
