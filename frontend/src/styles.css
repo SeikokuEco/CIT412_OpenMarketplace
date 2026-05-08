@@ -60,7 +60,6 @@ body {
   padding: 20px;
 }
 
-
 .layout-with-details {
   display: flex;
   gap: 20px;
@@ -68,7 +67,7 @@ body {
   justify-content: flex-start;
 }
 
-/* LEFT COLUMN (Listings) */
+/* LEFT COLUMN */
 .left-column {
   flex: 1;
   min-width: 60%;
@@ -76,9 +75,9 @@ body {
 
 /* RIGHT COLUMN (Details Panel) */
 .details-panel {
-  flex: 0 0 720px;  
+  flex: 0 0 720px;
   max-width: 600px;
-  max-height: 600px;  
+  max-height: 600px;
   background: #ffffff;
   padding: 20px;
   border-radius: 12px;
@@ -87,10 +86,7 @@ body {
   top: 90px;
 }
 
-
-
-
-/* Placeholder when nothing selected */
+/* Placeholder */
 .placeholder {
   color: #777;
   font-style: italic;
@@ -98,10 +94,10 @@ body {
   text-align: center;
 }
 
-/* LISTINGS GRID */
+/* RIGHT SECTION */
 .right {
+  width: 100%;
   max-width: 1200px;
-  width: auto;
 }
 
 .section-title {
@@ -111,13 +107,14 @@ body {
   color: #333;
 }
 
+/* GRID */
 .listings {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 20px;
 }
 
-/* LISTING CARD */
+/* CARD */
 .card {
   background: white;
   padding: 18px;
@@ -164,58 +161,18 @@ body {
   color: white;
 }
 
-/* FORM */
-.form {
-  width: 100%;
-  max-width: 500px;
+#detailsButtonhHome {
+  background: #d1e2ff;
+  color: black;
+}
+
+/* DETAILS */
+.detail {
+  margin: 30px;
   background: white;
-  padding: 30px;
-  border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  margin-bottom: 40px;
-}
-
-.form h3 {
-  text-align: center;
-  font-size: 24px;
-  margin-bottom: 20px;
-  color: #1877f2;
-}
-
-.form input,
-.form textarea {
-  width: 100%;
-  padding: 14px;
-  margin-bottom: 14px;
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  font-size: 15px;
-  transition: 0.2s;
-}
-
-.form input:focus,
-.form textarea:focus {
-  border-color: #1877f2;
-  outline: none;
-  box-shadow: 0 0 0 2px rgba(24,119,242,0.15);
-}
-
-.btn {
-  width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  border-radius: 10px;
-  border: none;
-  background: linear-gradient(90deg, #1877f2, #3a8dff);
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(24,119,242,0.3);
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
 }
 
 /* DROPDOWN */
@@ -239,13 +196,15 @@ body {
 .dropdown:hover {
   border-color: #888;
 }
+
+/* DETAIL CARD */
 .detail-card {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-/* Horizontal layout for image + map */
+/* IMAGE + MAP ROW */
 .detail-row {
   display: flex;
   gap: 16px;
@@ -266,6 +225,7 @@ body {
   overflow: hidden;
 }
 
+/* TEXT SPACING */
 .details-panel p,
 .details-panel h3,
 .details-panel h4 {
