@@ -17,7 +17,7 @@ export default function ListingDetail({ listing, onClose }) {
       <p><strong>Condition:</strong> {listing.condition}</p>
       <p><strong>Location:</strong> {listing.location}</p>
 
-      <div className="detail-flex">
+      <div className="detail-row">
         {listing.image_url && (
           <img
             src={listing.image_url}

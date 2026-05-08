@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import ListingDetail from "./components/ListingDetail";
 import HomePage from "./pages/HomePage";
 import CreateListingPage from "./pages/CreateListingPage";
+
 import "./styles.css";
 
 const BASE_URL = "/api/listing";
@@ -77,13 +78,11 @@ function App() {
     alert("Saved!");
   };
 
-  //  Start editing
   const startEditing = (listing) => {
     setEditing(listing);
     setPage("create");
   };
 
-  //  Update listing
   const updateListing = async (id, formData, imageFile) => {
     let image_url = formData.image_url;
 
@@ -112,7 +111,7 @@ function App() {
 
   return (
     <div>
-      {/*  Navigation Bar */}
+      {/* Navigation Bar */}
       <div className="navbar">
         <div className="nav-left">Marketplace</div>
 
@@ -121,6 +120,7 @@ function App() {
             className={page === "home" ? "nav-btn active" : "nav-btn"}
             onClick={() => {
               setEditing(null);
+              setSelected(null);
               setPage("home");
             }}
           >
@@ -131,6 +131,7 @@ function App() {
             className={page === "create" ? "nav-btn active" : "nav-btn"}
             onClick={() => {
               setEditing(null);
+              setSelected(null);
               setPage("create");
             }}
           >
@@ -141,30 +142,39 @@ function App() {
 
       {/* Page Switching */}
       {page === "home" && (
-        <HomePage
-          listings={listings}
-          onSelect={setSelected}
-          onDelete={deleteListing}
-          onSave={saveListing}
-          onEdit={startEditing}   
-        />
-      )}
+        <div className={selected ? "layout-with-details" : "layout-centered"}>
+          
+          <div className="left-column">
+            <HomePage
+              listings={listings}
+              onSelect={setSelected}
+              onDelete={deleteListing}
+              onSave={saveListing}
+              onEdit={startEditing}
+            />
+          </div>
 
+          {selected && (
+            <div className="details-panel">
+              <ListingDetail
+                listing={selected}
+                onClose={() => setSelected(null)}
+              />
+            </div>
+          )}
+
+        </div>
+      )}
       {page === "create" && (
         <CreateListingPage
           listings={listings}
           onAdd={addListing}
           onDelete={deleteListing}
           onSelect={setSelected}
-          onEdit={startEditing}     
-          onUpdate={updateListing}  
-          editing={editing}        
+          onEdit={startEditing}
+          onUpdate={updateListing}
+          editing={editing}
         />
-      )}
-
-      {/* ⭐ Listing Detail Modal */}
-      {selected && (
-        <ListingDetail listing={selected} onClose={() => setSelected(null)} />
       )}
     </div>
   );
